@@ -1,0 +1,8 @@
+Nmap lab I achieved the following: 
+- carried out host discovery using [nmap -sn 10.6.6.0/24] to discover hosts that are up on a network and open ports on each host. 
+- carried out OS fingerprinting [sudo nmap -O 10.6.6.23] - know details of OSs on this host and open ports and services running on host. 
+- carried out an aggressive scan [nmap -p21 -sV -A -T24 10.6.6.23] - port 21(p21), version of OS and apps on host (sV), aggressive scan (A), time and speed (T24).
+- netbios scan [nmap -A -p139,445 10.6.6.23] - scan two ports at a time
+- basic scripting: inbuilt Python scripts that can help a pentester know weaknesses on smb or Samba (Windows) 
+    [nmap --script smb-enum-shares.nse -p445 10.6.6.23]
+- anonymous login to host computer: [smbclient //10.6.6.23/print $ - N
