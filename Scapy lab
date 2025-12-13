@@ -1,0 +1,7 @@
+Scapy Lab Practical: 
+- I learned how to view all available protocols using ls();
+- filter ls() e.g. ls(IP) - to filter only commands for IP;
+- packet sniffing using - sniff();
+- used ping -c 4 <address> [to set ping count to 4]
+- assigned sniff output to a file using [paro=_] and viewed output summary [paro.summary()]
+- sniffed an interface using [sniff(iface="br-internal", filter="icmp", count=10) to filter for icmp and set count for sniff capture]
