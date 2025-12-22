@@ -1,0 +1,10 @@
+Used the SET tool kit, selected a web attack vector, cloned a website, entered the IP address and URL of the website to clone. A listener is up in the terminal waiting to capture any login details. 
+The difference between the real website and clonesite is that the real one has a domain name and the fake has an ip address. So things to watch out for: 
+-	It’s an ip instead of a domain name
+-	A domain name with some minor redflags
+-	If it’s a http site when we are used to an https it’s a concern
+-	A different domain name with the same page
+After the user logs in, it harvests credentials and redirects to the real webpage. 
+Copy the report link before typing Ctr C to leave the SET tool. 
+Cat /<paste report link>
+Report captured username, password, and user_token	
