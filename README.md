@@ -3,3 +3,5 @@ This Repo will contain documentation of the labs I will complete during the Paro
 - SCAPY
 - ENUM
 - SET (SOCIAL ENGINEERING TOOLKIT)
+- NIKTO (VULNERABILITY SCANNING)
+- SQL INJECTION
