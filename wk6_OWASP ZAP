@@ -1,0 +1,9 @@
+OWASP
+-	Open Web World Wide Application Security Project 
+-	OWASP top 10 – helps web application security testers understand the web application security issues and how to remediate them. 
+-	Open OWASP Zap, select the first option, and start the machine scan. Select the first option on your left, Zap automated scan
+Just so you know, OWASP Zap is very intrusive, so please make sure you have permission before running it on any system. 
+Why is a web vulnerability scan important? Because it is defensive reconnaissance—finding your weaknesses before attackers do.
+
+OWASP Zap found vulnerabilities with colored flags indicating the level of severity. 
+
